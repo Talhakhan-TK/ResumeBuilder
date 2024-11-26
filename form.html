@@ -1,0 +1,161 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Editable Resume Builder</title>  
+    <link rel="stylesheet" type="text/css" href="style.css">  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" />  
+</head>  
+<body>  
+
+    <div class="form_section">  
+        <form id="resumeForm">  
+                <h2>Fill out your information</h2>  
+                 
+            <fieldset>
+                <legend><h3>Personal Information</h3> </legend>
+            
+                <label for="dp" style=" margin-bottom: 5px; color:white;">Insert Your Picture:
+                    <input type="file" id="dp" accept="image/*"> </br> </br> </label>  
+                <input type="text" id="name" placeholder="Enter Your Name"required> </br> </br> 
+                <input type="text" id="tagline" placeholder="Enter Tagline Or Title" required> </br> </br> 
+                <input type="url" id="url" placeholder="Enter your Linkedin URL"> </br> </br> 
+                <input type="email" id="email" placeholder="Enter Your Email address " required>  </br></br> 
+                <input type="text" id="phone" placeholder="Enter Your Phone" required>  </br></br> 
+                <input type="text" id="location" placeholder="Enter Your Location" required>  
+            </fieldset>
+
+            <fieldset>
+                <legend><h3> Education </h3> </legend>
+
+                <div class="educationFields">  
+                    <input type="text" placeholder="Lattest Degree (e.g., MBA)" required>  
+                    <input type="text" placeholder="Institution" required>  
+                    <input type="text" placeholder="Year (e.g., 2020-2022)" required>  
+                    </br></br>
+                    <input type="text" placeholder="2nd Last Degree (e.g., BBA)">   
+                    <input type="text" placeholder="Institution">  
+                    <input type="text" placeholder="Year (e.g., 2018-2020)">  
+                    </br></br> </div> 
+                <textarea id="education" placeholder="Education Details (If want to add more e.g., B.com from Karachi University in 2017)"></textarea>  
+            
+            </fieldset>
+                
+            <fieldset>
+                <legend><h3>Work Experience</h3> </legend>
+                <div class="experienceFields">  
+                    <input type="text" placeholder="Current Title" required>  
+                    <input type="text" placeholder="company" required>  
+                    <input type="text" placeholder="Year (2020-2024)" required>  
+                    </br></br>
+                    <input type="text" placeholder="2nd Last Title" >  
+                    <input type="text" placeholder="company" >  
+                    <input type="text" placeholder="Year (2018-2020)" > 
+                    </br></br> </div> 
+                     <textarea id="experience" placeholder="Experience Details (If want to add more e.g., Officer at XYZ from 2015 to 2018)"></textarea>   
+            </fieldset>
+            
+            <fieldset>
+                <legend><h3>Skills </h3> </legend>
+                <input type="text" id="skills" placeholder="Skills (comma separated)" required>  
+             </fieldset>
+                <button type="submit">Generate Resume</button>    
+        </div>  
+    </div>  
+    <script>  
+        document.getElementById('resumeForm')?.addEventListener('submit', function(event) {  
+            event.preventDefault(); // Prevent form submission  
+    
+            // Get user input values  
+            const dpInput = document.getElementById('dp');
+                  let dp = null;
+                    if (dpInput.files && dpInput.files[0]) {
+                         const reader = new FileReader();
+                          reader.onloadend = function () {
+                            dp = reader.result; // The Base64 string of the image
+            const name = document.getElementById('name').value;  
+            const url = document.getElementById('url').value;  
+            const tagline = document.getElementById('tagline').value;  
+            const email = document.getElementById('email').value;  
+            const phone = document.getElementById('phone').value;  
+            const location = document.getElementById('location').value;   
+    
+            // Collecting education input  
+            const educationFields = document.querySelectorAll('.educationFields input');
+            const education = [];
+
+             for (let i = 0; i < educationFields.length; i += 3) {
+            if (i + 2 < educationFields.length) {
+            const degree = educationFields[i].value;
+            const institution = educationFields[i + 1].value;
+            const year = educationFields[i + 2].value;
+
+            if (degree && institution && year) {
+                education.push({ degree, institution, year });
+            }
+        }
+    }
+           const education2 = document.getElementById('education').value;
+
+            // Collecting experience input  
+            const experienceFields = document.querySelectorAll('.experienceFields input');
+              const experience = [];
+
+            for (let i = 0; i < experienceFields.length; i += 3) {
+             if (i + 2 < experienceFields.length) {
+            const jobTitle = experienceFields[i].value;
+            const company = experienceFields[i + 1].value;
+            const duration = experienceFields[i + 2].value;
+
+            if (jobTitle && company && duration) {
+                experience.push({ jobTitle, company, duration });
+            }
+        }
+    }
+             const experience2 = document.getElementById('experience').value;
+
+
+            // Collecting skills  
+            const skills = document.getElementById('skills').value.split(',').map(skill => skill.trim()).filter(skill => skill);;  
+                 
+            // Creating resume data object  
+            const resumeData = {  
+                dp,
+                name,  
+                tagline,
+                url,
+                email,  
+                phone,  
+                location,  
+                education,  
+                education2,
+                experience,  
+                experience2,
+                skills   
+                };   
+        
+            // Store the data in localStorage  
+           localStorage.setItem('resumeData', JSON.stringify(resumeData));  
+
+            localStorage.setItem('name', name);  // Store username
+
+            // Generate a unique URL based on the username
+            const uniqueURL = `${name}.vercel.app/resume`;
+
+           // Store the URL in localStorage for later use in resume.html
+           localStorage.setItem('resumeURL', uniqueURL);   
+
+            // Redirect to resume page  
+            window.location.href = 'resume.html';  
+
+        } ; 
+        reader.readAsDataURL(dpInput.files[0]);
+    } else {
+        alert("Please select a profile picture.");
+    }
+    });  
+
+    </script>  
+</body>  
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Your Resume</title>  
+    <link rel="stylesheet" type="text/css" href="style.css">  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+</head>  
+<body>  
+
+    <div class="container">
+        <div class="left_section">
+         <div class="profiletext">
+ 
+    <div class="resume_section">   
+        <h1>Resume</h1> 
+        <div id="resumePersonalInfo" ></div>  
+        <h3>SKILLS:</h3>  
+        <ul id="resumeSkills"></ul>
+        </div>  
+        </div>
+    </div>      
+
+    <div class=right_section>
+        <h4>EDUCATION:</h4>  
+        <div id="resumeEducation"></div>  
+        <h4>EXPERIENCE:</h4>  
+        <div id="resumeExperience"></div>  
+
+    </div>   
+        <div class="buttons-container">
+        <div id="shareDiv"></div>  </div>
+        <div class="buttons-container"><button id="downloadResumeBtn">Download Resume as PDF</button></div>
+        </div>
+    </div>
+    </div>
+     
+    <script>  
+        // Fetching resume data from localStorage  
+        const resumeData = JSON.parse(localStorage.getItem('resumeData'));  
+        const name = localStorage.getItem('name'); // Get the username
+        const resumeURL = localStorage.getItem('resumeURL')
+
+        if (resumeData) {  
+            document.getElementById('resumePersonalInfo').innerHTML = `  
+            <div class="profiletext">
+            <div class="img">
+                <img src="${resumeData.dp}"; alt="dp"></div>
+            <h2>   <p contenteditable="true" > ${resumeData.name}</p> 
+            <span> <p contenteditable="true"> ${resumeData.tagline}</p>  </h2> 
+            </div>
+             <h3>CONTACT INFO: </h3>
+             <ul>
+             <p  contenteditable="true">   <span class="icon"><i class="fa fa-envelope" aria-hidden="true"></i></span> ${resumeData.email}</p>  
+             <p  contenteditable="true">   <span class="icon"><i class="fa fa-phone" aria-hidden="true"></i></span> ${resumeData.phone}</p>  
+             <p  contenteditable="true">   <span class="icon"><i class="fa fa-linkedin" aria-hidden="true"></i></span> ${resumeData.url}</p> 
+             <p  contenteditable="true">   <span class="icon"><i class="fa fa-map-signs" aria-hidden="true"></i></span> ${resumeData.location}</p>  
+             </ul>
+            
+            `;  
+            // Displaying skills
+            const skillsList = resumeData.skills.map(skill=> `<li contenteditable="true">${skill}</li>`).join('');  
+            document.getElementById('resumeSkills').innerHTML = skillsList;     
+            
+            // Displaying education data  
+            const educationDiv = document.getElementById('resumeEducation');  
+            resumeData.education.forEach(edu => {  
+                educationDiv.innerHTML += `
+                <p>
+                <h1 contenteditable="true"">${edu.degree}</h1>
+                <h7 contenteditable="true"">${edu.institution}</h7> 
+                <h5 contenteditable="true""><i class="fa fa-calendar" aria-hidden="true"></i>  ${edu.year}</h5></br></p>`
+            });  
+            const educationDiv2 = document.getElementById('education');
+            if (resumeData.education2) {
+             educationDiv.innerHTML += `<p><h1 contenteditable="true"">${resumeData.education2}</h1></br></p>`; // This will append without overwriting previous content.
+}
+
+            // Displaying experience data  
+            const experienceDiv = document.getElementById('resumeExperience');
+             resumeData.experience.forEach(exp => {
+             experienceDiv.innerHTML += 
+            `<p>
+                <h1 contenteditable="true"">${exp.jobTitle}</h1>
+                <h7 contenteditable="true"">${exp.company}</h7>
+                <h5 contenteditable="true""><i class="fa fa-calendar" aria-hidden="true"></i> ${exp.duration}</h5> </br></p> 
+          
+        `;
+    });
+             if (resumeData.experience2) {
+              experienceDiv.innerHTML += `<p><strong><h1 contenteditable="true"">${resumeData.experience2}</h1></strong></br></p>`; // Displaying `experience2` here
+    
+        }
+        
+        // Save changes to localStorage when user stops editing
+            document.querySelectorAll('[contenteditable]').forEach(element => {
+                element.addEventListener('blur', function() {
+                    const fieldId = element.id;
+                    if (fieldId.startsWith('education') || fieldId.startsWith('experience')) {
+                        // Update the education or experience field in the resumeData
+                        const updatedValue = element.innerText.trim();
+                        if (fieldId.startsWith('education')) {
+                            const index = parseInt(fieldId.replace('education', ''));
+                            resumeData.education[index] = updatedValue; // Update education field
+                        } else if (fieldId.startsWith('experience')) {
+                            const index = parseInt(fieldId.replace('experience', ''));
+                            resumeData.experience[index] = updatedValue; // Update experience field
+                        }
+                    } else {
+                        // For general fields like name, email, etc.
+                        resumeData[fieldId] = element.innerText.trim();
+                    }
+                    // Save the updated resume data
+                    localStorage.setItem('resumeData', JSON.stringify(resumeData));
+                });
+            }
+        );
+
+    const shareDiv = document.createElement('div');
+    shareDiv.innerHTML = `
+        <p>Share this link to your resume: <a href="https://${resumeURL}" target="_blank">${resumeURL}</a></p>
+    `;
+    document.getElementById('shareDiv').appendChild(shareDiv);
+
+    const downloadBtn = document.getElementById('downloadResumeBtn');
+
+downloadBtn.addEventListener('click', function () {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Ensure the content is fully rendered and available in the DOM before generating the PDF
+    const resumeContent = document.querySelector('.Container');
+    
+    // Debugging: Check if the content is being properly selected
+    if (!resumeContent) {
+        console.error("Content container not found. Check the structure.");
+        return;
+    }
+    
+    // Ensure content is visible in the DOM
+    console.log("Resume content:", resumeContent.innerHTML);  // Log content for debugging
+
+    // Directly call jsPDF without setTimeout to see if the issue is with rendering delay
+    setTimeout(function() {
+        doc.html(resumeContent, {
+            callback: function (doc) {
+                console.log("PDF generated successfully");
+                doc.save(`${name || 'resume'}_resume.pdf`);
+            },
+            margin: [10, 10, 10, 10],  // Optional: Set margins for the PDF
+            html2canvas: {
+                scale: 2, // Improve quality
+                logging: true, // Log html2canvas activities
+                useCORS: true, // Ensure CORS is used for external images (if any)
+            },
+        });
+    }, 500);  // Add a small delay to ensure all content is rendered
+});
+    }
+
+</script>
+</body>  
+</html>
